@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Random Position Picker</title>
+<style>
+    body {
+        background-color: #000;
+        font-family: Arial, sans-serif;
+        color: #0ff;
+        text-align: center;
+        padding: 20px;
+    }
+    h1 {
+        color: #0ff;
+        text-shadow: 0 0 10px #0ff;
+    }
+    .game-board {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        max-width: 400px;
+        margin: auto;
+    }
+    .box {
+        background-color: #111;
+        border: 2px solid #0ff;
+        padding: 20px;
+        font-size: 1.5em;
+        color: #0ff;
+        cursor: pointer;
+        border-radius: 10px;
+        transition: 0.3s;
+        text-shadow: 0 0 5px #0ff;
+    }
+    .box.disabled {
+        background-color: #333;
+        color: #555;
+        cursor: not-allowed;
+        border-color: #555;
+    }
+    .box:hover:not(.disabled) {
+        background-color: #0ff;
+        color: #000;
+    }
+    #chosen {
+        margin-top: 20px;
+        font-size: 1.2em;
+    }
+    button {
+        padding: 10px 15px;
+        margin-top: 20px;
+        font-size: 1em;
+        border-radius: 5px;
+        background-color: #0ff;
+        color: #000;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    button:hover {
+        background-color: #00cccc;
+    }
+</style>
+</head>
+<body>
+
+<h1>🎲 Random Position Picker 🎲</h1>
+<p>Click a box to get your random position!</p>
+
+<div class="game-board" id="board"></div>
+
+<div id="chosen"><strong>Chosen Numbers:</strong> None yet</div>
+
+<button id="resetBtn">🔄 Reset Game (Admin Only)</button>
+
+<script>
+    const board = document.getElementById('board');
+    const chosenDiv = document.getElementById('chosen');
+    const resetBtn = document.getElementById('resetBtn');
+
+    let availableNumbers = Array.from({length: 12}, (_, i) => i + 1);
+    let chosenNumbers = {};
+    const ADMIN_PASSWORD = "20"; // 🔑 Admin password set to 20
+
+    function createBoard() {
+        board.innerHTML = '';
+        for (let i = 1; i <= 12; i++) {
+            const box = document.createElement('div');
+            box.classList.add('box');
+            box.textContent = `Box ${i}`;
+            box.onclick = () => chooseBox(i, box);
+            board.appendChild(box);
+        }
+    }
+
+    function chooseBox(boxNum, element) {
+        if (element.classList.contains('disabled')) return;
+        if (availableNumbers.length === 0) return;
+
+        const randomIndex = Math.floor(Math.random() * availableNumbers.length);
+        const number = availableNumbers.splice(randomIndex, 1)[0];
+        chosenNumbers[`Box ${boxNum}`] = number;
+
+        element.textContent = number;
+        element.classList.add('disabled');
+
+        updateChosenList();
+    }
+
+    function updateChosenList() {
+        if (Object.keys(chosenNumbers).length === 0) {
+            chosenDiv.innerHTML = "<strong>Chosen Numbers:</strong> None yet";
+            return;
+        }
+        let list = Object.entries(chosenNumbers)
+            .map(([box, num]) => `${box}: ${num}`)
+            .join(', ');
+        chosenDiv.innerHTML = `<strong>Chosen Numbers:</strong> ${list}`;
+    }
+
+    function resetGame() {
+        availableNumbers = Array.from({length: 12}, (_, i) => i + 1);
+        chosenNumbers = {};
+        createBoard();
+        updateChosenList();
+    }
+
+    resetBtn.addEventListener('click', () => {
+        const inputPassword = prompt("Enter admin password to reset:");
+        if (inputPassword === ADMIN_PASSWORD) {
+            resetGame();
+            alert("Game reset successfully!");
+        } else {
+            alert("❌ Incorrect password! Reset not allowed.");
+        }
+    });
+
+    createBoard();
+</script>
+
+</body>
+</html>
